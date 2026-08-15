@@ -1,0 +1,8 @@
+### 🔄 The Complete End-to-End User Flow
+
+
+```
+[1. ADMIN TRAINS SYSTEM] ➔ [2. CUSTOMER ASKS QUESTION] ➔ [3. AI SENDS AUTOMATED REPLY] ➔ [4. HUMAN ESCALATION & TAKEOVER]
+
+
+```

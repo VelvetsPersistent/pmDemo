@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KTM AI Omnichannel Desk - Pro Dashboard</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Google Fonts -->
+   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 9999px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .glass-effect { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(8px); }
+  </style>
+</head>
+<body class="bg-slate-100 font-sans text-slate-800 antialiased min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white">
+
+
+
+  <!-- ================= AUTHENTICATION MODAL ================= -->
+  <div id="login-modal" class="fixed inset-0 bg-slate-950/80 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-7 space-y-6 border border-slate-100">
+      <div class="text-center space-y-2">
+        <div class="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-violet-500 rounded-2xl flex items-center justify-center mx-auto text-white shadow-lg shadow-indigo-300">
+          <i data-lucide="shield-check" class="w-7 h-7"></i>
+        </div>
+        <h2 class="text-2xl font-black text-slate-900 tracking-tight">Agent Authentication</h2>
+        <p class="text-xs text-slate-500">Select or enter your human agent profile to manage live customer threads.</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Select Human Agent</label>
+          <select id="agent-select" class="w-full text-xs p-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-indigo-500 outline-none font-medium text-slate-700">
+            <option value="Smita Parajuli (Project Manager)">Smita Parajuli (Project Manager)</option>
+            <option value="Rohan Shrestha (Senior Support Lead)">Rohan Shrestha (Senior Support Lead)</option>
+            <option value="Sita Gurung (Customer Experience)">Sita Gurung (Customer Experience)</option>
+            <option value="Aarav Sharma (Technical Support)">Aarav Sharma (Technical Support)</option>
+            <option value="Priyanjali K. C. (Enterprise Lead)">Priyanjali K. C. (Enterprise Lead)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Or Enter Custom Name</label>
+          <input type="text" id="custom-agent-name" placeholder="e.g. Bijay Thapa" class="w-full text-xs p-3 border border-slate-200 rounded-xl outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 font-medium">
+        </div>
+      </div>
+
+      <button onclick="loginAgent()" class="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-3.5 rounded-2xl text-xs shadow-lg shadow-indigo-200 transition active:scale-[0.98]">
+        Log In to Desk Workspace
+      </button>
+    </div>
+  </div>
+
+  <!-- ================= HEADER ================= -->
+  <header class="bg-slate-900 text-white px-6 py-3.5 flex items-center justify-between shadow-lg sticky top-0 z-30">
+    <div class="flex items-center gap-3">
+      <div class="bg-gradient-to-tr from-indigo-500 to-violet-500 p-2.5 rounded-xl shadow-md">
+        <i data-lucide="bot" class="w-6 h-6 text-white"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-lg leading-tight flex items-center gap-2 tracking-tight">
+          KTM AI Omni Chart Desk
+          <span class="text-[10px] font-semibold bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 px-2.5 py-0.5 rounded-full uppercase tracking-wide">v3.0 Enterprise</span>
+        </h1>
+        <p class="text-xs text-slate-400 flex items-center gap-2">
+          <span>Integrated Human Agent Hub</span> • <span class="text-emerald-400 font-medium flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Kathmandu HQ</span>
+        </p>
+      </div>
+    </div>
+    
+    <div class="flex items-center gap-3 text-xs">
+      <!-- Active Agent Identity Card -->
+      <div class="flex items-center gap-2.5 bg-slate-800/80 px-3.5 py-1.5 rounded-2xl border border-slate-700">
+        <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold flex items-center justify-center text-xs shadow-inner" id="agent-avatar-badge">
+          RS
+        </div>
+        <div>
+          <p class="font-bold text-slate-100 leading-none" id="current-agent-display">Rohan Shrestha</p>
+          <p class="text-[10px] text-emerald-400 leading-tight font-medium">Human Agent (Online)</p>
+        </div>
+        <button onclick="logoutAgent()" title="Switch Agent Profile" class="ml-2 text-slate-400 hover:text-rose-400 transition">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+        </button>
+      </div>
+      
+      <!-- Export Data Button -->
+      <button onclick="openExportModal()" class="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl font-bold transition shadow-md shadow-indigo-900/30">
+        <i data-lucide="download" class="w-4 h-4"></i> Export Logs
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <!-- ================= SIDEBAR NAVIGATION ================= -->
+    <aside class="w-64 bg-white border-r border-slate-200/80 flex flex-col justify-between hidden md:flex shrink-0">
+      <div class="p-4 space-y-1">
+        <p class="px-3 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Workspace Modules</p>
+        
+        <button onclick="switchTab('inbox')" id="nav-inbox" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold rounded-xl bg-indigo-50 text-indigo-600 transition">
+          <i data-lucide="inbox" class="w-4 h-4"></i>
+          Unified Inbox
+          <span id="unread-count-badge" class="ml-auto bg-indigo-600 text-white text-[10px] px-2 py-0.5 rounded-full font-bold shadow-sm">6</span>
+        </button>
+
+        <button onclick="switchTab('knowledge')" id="nav-knowledge" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-50 transition">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          Knowledge Base
+        </button>
+
+        <button onclick="switchTab('prompts')" id="nav-prompts" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-50 transition">
+          <i data-lucide="sliders" class="w-4 h-4"></i>
+          Prompt Rules
+        </button>
+
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center gap-3 px-3.5 py-2.5 text-xs font-bold rounded-xl text-slate-600 hover:bg-slate-50 transition">
+          <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+          Analytics
+        </button>
+      </div>
+
+      <!-- Live Channel Stats Panel -->
+      <div class="p-4 m-3 bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200/80 rounded-2xl space-y-3 text-xs">
+        <div class="flex items-center justify-between">
+          <span class="font-bold text-slate-800 tracking-tight">Real-Time Traffic</span>
+          <span class="flex h-2 w-2 relative">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+          </span>
+        </div>
+        <div class="space-y-2 text-slate-600">
+          <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+            <span class="flex items-center gap-2 font-medium"><i class="fa-solid fa-globe text-blue-500 w-4"></i> Website</span>
+            <span class="font-bold text-slate-800" id="stat-website">42</span>
+          </div>
+          <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+            <span class="flex items-center gap-2 font-medium"><i class="fa-brands fa-whatsapp text-emerald-500 w-4"></i> WhatsApp</span>
+            <span class="font-bold text-slate-800" id="stat-whatsapp">58</span>
+          </div>
+          <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+            <span class="flex items-center gap-2 font-medium"><i class="fa-brands fa-facebook text-indigo-500 w-4"></i> Facebook</span>
+            <span class="font-bold text-slate-800" id="stat-facebook">31</span>
+          </div>
+          <div class="flex justify-between items-center bg-white px-2.5 py-1.5 rounded-lg border border-slate-100 shadow-sm">
+            <span class="flex items-center gap-2 font-medium"><i class="fa-brands fa-instagram text-pink-500 w-4"></i> Instagram</span>
+            <span class="font-bold text-slate-800" id="stat-instagram">27</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ================= MAIN CONTENT ================= -->
+    <main class="flex-1 overflow-y-auto p-4 bg-slate-100/70">
+      
+      <!-- ================= TAB 1: UNIFIED INBOX ================= -->
+      <section id="tab-inbox" class="space-y-4">
+        <!-- Filter Bar -->
+        <div class="flex flex-wrap items-center justify-between bg-white p-2.5 rounded-2xl border border-slate-200/80 shadow-sm gap-2">
+          <div class="flex items-center gap-1.5 text-xs overflow-x-auto pb-1 md:pb-0">
+            <span class="font-bold text-slate-400 px-2 uppercase text-[10px] tracking-wider">Channels:</span>
+            <button onclick="filterChannel('all')" id="btn-filter-all" class="px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold flex items-center gap-1.5 shadow-sm">
+              <i class="fa-solid fa-layer-group"></i> All (<span id="count-all">6</span>)
+            </button>
+            <button onclick="filterChannel('Website')" id="btn-filter-Website" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-globe text-blue-500"></i> Website (<span id="count-Website">2</span>)
+            </button>
+            <button onclick="filterChannel('WhatsApp')" id="btn-filter-WhatsApp" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold flex items-center gap-1.5 transition">
+              <i class="fa-brands fa-whatsapp text-emerald-500"></i> WhatsApp (<span id="count-WhatsApp">2</span>)
+            </button>
+            <button onclick="filterChannel('Facebook')" id="btn-filter-Facebook" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold flex items-center gap-1.5 transition">
+              <i class="fa-brands fa-facebook text-indigo-500"></i> Facebook (<span id="count-Facebook">1</span>)
+            </button>
+            <button onclick="filterChannel('Instagram')" id="btn-filter-Instagram" class="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold flex items-center gap-1.5 transition">
+              <i class="fa-brands fa-instagram text-pink-500"></i> Instagram (<span id="count-Instagram">1</span>)
+            </button>
+          </div>
+
+          <button onclick="triggerManualIncomingChat()" class="text-xs bg-emerald-500 hover:bg-emerald-600 text-white px-3.5 py-1.5 rounded-xl font-bold transition flex items-center gap-1.5 shadow-sm">
+            <i data-lucide="zap" class="w-3.5 h-3.5"></i> Simulate Incoming Message
+          </button>
+        </div>
+
+        <!-- Main Desk Layout (3-Column Grid) -->
+        <div class="grid grid-cols-12 gap-4 h-[calc(100vh-175px)]">
+          
+          <!-- Chat Feed List (3 Cols) -->
+          <div class="col-span-12 lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden flex flex-col">
+            <div class="p-3 border-b border-slate-100 bg-slate-50/50">
+              <div class="relative">
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400"></i>
+                <input type="text" id="chat-search" onkeyup="renderChatList()" placeholder="Search conversations..." class="w-full text-xs pl-8 pr-3 py-2 bg-white rounded-xl outline-none border border-slate-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 font-medium">
+              </div>
+            </div>
+            <div id="chat-feed-list" class="divide-y divide-slate-100 overflow-y-auto custom-scrollbar flex-1">
+              <!-- Dynamically Populated -->
+            </div>
+          </div>
+
+          <!-- Active Conversation Main Window (6 Cols) -->
+          <div class="col-span-12 lg:col-span-6 bg-white rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between overflow-hidden">
+            <!-- Dynamic Thread Header -->
+            <div class="p-3.5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+              <div class="flex items-center gap-3">
+                <div id="active-chat-avatar" class="w-10 h-10 rounded-2xl bg-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-md shadow-indigo-200">
+                  ?
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 id="active-chat-name" class="font-bold text-sm text-slate-800">Select a Thread</h3>
+                    <span id="active-chat-sentiment" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600">Neutral</span>
+                  </div>
+                  <p id="active-chat-meta" class="text-[11px] text-slate-500 flex items-center gap-1 font-medium">No active thread selected</p>
+                </div>
+              </div>
+              
+              <!-- AI vs Human Mode Toggle Switch -->
+              <div class="flex items-center bg-slate-200/70 p-1 rounded-2xl border border-slate-200">
+                <button id="mode-ai" onclick="setMode('AI')" class="px-3 py-1 text-xs font-bold rounded-xl transition">AI Mode</button>
+                <button id="mode-human" onclick="setMode('Human')" class="px-3 py-1 text-xs font-bold rounded-xl transition">Human Mode</button>
+              </div>
+            </div>
+
+            <!-- Messages Stream -->
+            <div id="admin-chat-box" class="p-4 space-y-3.5 overflow-y-auto custom-scrollbar flex-1 bg-slate-50/40 text-xs">
+              <div class="text-center text-slate-400 my-10">Select a conversation thread to start monitoring.</div>
+            </div>
+
+            <!-- Reply Console Input Bar -->
+            <div class="p-3.5 border-t border-slate-100 bg-white space-y-2.5">
+              <div class="flex items-center justify-between text-[11px] text-slate-500 px-1 font-medium">
+                <span class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Replying as: <strong class="text-slate-800 font-bold" id="input-reply-identity">Rohan Shrestha</strong>
+                </span>
+                <span id="mode-status-indicator" class="text-indigo-600 font-bold">AI Automated Answers Active</span>
+              </div>
+              <div class="flex gap-2">
+                <input type="text" id="admin-input" onkeypress="handleAdminKeyPress(event)" placeholder="Type message as logged-in agent..." class="flex-1 text-xs px-3.5 py-3 border border-slate-200 rounded-2xl outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100 font-medium">
+                <button onclick="sendHumanReply()" class="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-5 py-3 rounded-2xl text-xs font-bold transition flex items-center gap-2 shadow-md shadow-indigo-200 active:scale-95">
+                  <i data-lucide="send" class="w-4 h-4"></i> Send
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Customer CRM & AI Copilot Sidebar (3 Cols) -->
+          <div class="col-span-12 lg:col-span-3 bg-white rounded-2xl border border-slate-200/80 shadow-sm p-4 overflow-y-auto custom-scrollbar space-y-5">
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Customer Profile</p>
+              <div class="space-y-3 text-xs bg-slate-50/70 p-3 rounded-2xl border border-slate-100">
+                <div>
+                  <span class="text-slate-400 block text-[10px] font-semibold uppercase">Email:</span>
+                  <span id="customer-email" class="font-bold text-slate-700">sarah.c@example.com</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[10px] font-semibold uppercase">Phone / Handle:</span>
+                  <span id="customer-phone" class="font-bold text-slate-700">+1 (555) 019-2831</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[10px] font-semibold uppercase">Customer Lifetime Tier:</span>
+                  <span id="customer-tier" class="inline-block mt-0.5 px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-bold text-[10px]">VIP Enterprise</span>
+                </div>
+                <div>
+                  <span class="text-slate-400 block text-[10px] font-semibold uppercase">First Seen:</span>
+                  <span id="customer-first-seen" class="font-bold text-slate-700">Aug 01, 2026</span>
+                </div>
+              </div>
+            </div>
+
+            <hr class="border-slate-100" />
+
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">AI Copilot Smart Quick Replies</p>
+                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-500 animate-spin"></i>
+              </div>
+              <div id="ai-copilot-box" class="space-y-2">
+                <!-- Copilot Suggestions inserted dynamically -->
+              </div>
+            </div>
+
+            <hr class="border-slate-100" />
+
+            <div>
+              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Agent Internal Notes</p>
+              <textarea id="agent-notes" placeholder="Write internal team note for this customer..." class="w-full text-xs p-2.5 border border-slate-200 rounded-xl outline-none focus:border-indigo-500 bg-slate-50 h-20 resize-none font-medium"></textarea>
+              <button onclick="saveInternalNote()" class="mt-2 text-[11px] bg-slate-800 text-white px-3 py-1.5 rounded-lg font-bold hover:bg-slate-700 transition w-full">Save Note</button>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ================= TAB 2: KNOWLEDGE BASE ================= -->
+      <section id="tab-knowledge" class="space-y-6 hidden">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-xl font-bold text-slate-900 tracking-tight">Knowledge Base Directory</h2>
+            <p class="text-xs text-slate-500">Trained source documents used by the KTM AI engine to construct accurate responses.</p>
+          </div>
+          <span class="px-3 py-1 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl text-xs font-bold">Vector Search Online</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-indigo-600"></i> Upload Knowledge File
+            </h3>
+            <div onclick="triggerFileUpload()" class="border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center hover:border-indigo-500 hover:bg-indigo-50/30 transition cursor-pointer bg-slate-50/50">
+              <i data-lucide="file-text" class="w-10 h-10 text-indigo-400 mx-auto mb-2"></i>
+              <p class="text-xs font-bold text-slate-700">Click to upload PDF, CSV, or TXT source files</p>
+              <p class="text-[10px] text-slate-400 mt-1">Maximum file size 25MB • Auto-chunked & embedded</p>
+              <input type="file" id="file-input" class="hidden" onchange="handleFileSelect(event)">
+            </div>
+          </div>
+
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <h3 class="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <i data-lucide="globe" class="w-4 h-4 text-indigo-600"></i> Live Web Crawler & Scraper
+            </h3>
+            <div class="space-y-3">
+              <div class="flex gap-2">
+                <input type="text" id="scrape-url" value="https://KTMtechnologies.com/faq" class="flex-1 text-xs px-3.5 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-indigo-600 font-medium">
+                <button onclick="startScrape()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">Scrape Page</button>
+              </div>
+              <div id="scrape-progress" class="hidden space-y-1.5 pt-2">
+                <div class="flex justify-between text-[11px] text-slate-600 font-bold">
+                  <span id="scrape-status">Parsing DOM & extracting vectors...</span>
+                  <span id="scrape-percent">0%</span>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                  <div id="scrape-bar" class="bg-indigo-600 h-2 rounded-full w-0 transition-all duration-300"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Directory Table -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-800">Indexed Training Sources</h3>
+            <span class="text-xs text-slate-500 font-medium">Updated real-time</span>
+          </div>
+          <table class="w-full text-left text-xs">
+            <thead class="bg-slate-50 text-slate-400 uppercase text-[10px] tracking-wider font-bold border-b border-slate-100">
+              <tr>
+                <th class="p-3.5">Source Identifier</th>
+                <th class="p-3.5">Type</th>
+                <th class="p-3.5">Indexing Date</th>
+                <th class="p-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="directory-table" class="divide-y divide-slate-100 text-slate-700 font-medium">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= TAB 3: PROMPTS ================= -->
+      <section id="tab-prompts" class="space-y-5 hidden">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">System Persona & Guardrails</h2>
+          <p class="text-xs text-slate-500">Configure behavior guidelines and AI persona tones across all active channels.</p>
+        </div>
+
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-5 max-w-3xl">
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">AI System Persona Role</label>
+            <input type="text" id="prompt-tone" value="Professional, ultra-fast support agent for KTM Technologies Nepal" class="w-full text-xs p-3 border border-slate-200 rounded-xl outline-none focus:border-indigo-600 font-medium">
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Instructions & Operational Guardrails</label>
+            <textarea id="prompt-rules" rows="5" class="w-full text-xs p-3.5 border border-slate-200 rounded-xl outline-none focus:border-indigo-600 font-medium">Always answer concisely based strictly on indexed knowledge base documents. If a customer requests custom software pricing, ask for their business email address to issue a formal quote.</textarea>
+          </div>
+          <button onclick="alert('System Persona Prompts updated successfully!')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-5 py-3 rounded-xl font-bold shadow-md transition">Save Prompt Parameters</button>
+        </div>
+      </section>
+
+      <!-- ================= TAB 4: ANALYTICS ================= -->
+      <section id="tab-analytics" class="space-y-6 hidden">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight">Omnichannel Performance Analytics</h2>
+          <p class="text-xs text-slate-500">Overview of ticket volumes, deflection rates, and response metrics.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Total Received Messages</p>
+            <p class="text-3xl font-black text-slate-900" id="analytic-total-msgs">158</p>
+            <p class="text-[11px] text-emerald-500 font-bold flex items-center gap-1"><i data-lucide="trending-up" class="w-3.5 h-3.5"></i> +22.4% this week</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">AI Automated Deflection</p>
+            <p class="text-3xl font-black text-indigo-600">81.2%</p>
+            <p class="text-[11px] text-slate-400 font-medium">Handled without human intervention</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Avg Response Speed</p>
+            <p class="text-3xl font-black text-slate-900">48s</p>
+            <p class="text-[11px] text-emerald-500 font-bold">⚡ Sub-minute delivery</p>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Active Human Escalations</p>
+            <p class="text-3xl font-black text-amber-500">18.8%</p>
+            <p class="text-[11px] text-slate-400 font-medium">Assigned to live team</p>
+          </div>
+        </div>
+
+        <!-- Breakdown by Channel -->
+        <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+          <h3 class="text-sm font-bold text-slate-800">Traffic Distribution by Channel</h3>
+          <div class="space-y-4 text-xs font-medium">
+            <div>
+              <div class="flex justify-between mb-1.5">
+                <span class="flex items-center gap-2"><i class="fa-brands fa-whatsapp text-emerald-500"></i> WhatsApp (37%)</span>
+                <span class="font-bold text-slate-800">58 messages</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-emerald-500 h-2.5 rounded-full w-[37%]"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1.5">
+                <span class="flex items-center gap-2"><i class="fa-solid fa-globe text-blue-500"></i> Website Live Widget (27%)</span>
+                <span class="font-bold text-slate-800">42 messages</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-blue-500 h-2.5 rounded-full w-[27%]"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1.5">
+                <span class="flex items-center gap-2"><i class="fa-brands fa-facebook text-indigo-500"></i> Facebook (20%)</span>
+                <span class="font-bold text-slate-800">31 messages</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-indigo-500 h-2.5 rounded-full w-[20%]"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between mb-1.5">
+                <span class="flex items-center gap-2"><i class="fa-brands fa-instagram text-pink-500"></i> Instagram (16%)</span>
+                <span class="font-bold text-slate-800">27 messages</span>
+              </div>
+              <div class="w-full bg-slate-100 rounded-full h-2.5 overflow-hidden">
+                <div class="bg-pink-500 h-2.5 rounded-full w-[16%]"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- ================= FLOATING DEMO WEBSITE CHAT WIDGET ================= -->
+  <div class="fixed bottom-5 right-5 z-40">
+    <button onclick="toggleWidget()" id="widget-bubble" class="w-14 h-14 bg-gradient-to-tr from-indigo-600 to-violet-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-105 transition duration-200">
+      <i data-lucide="message-circle" class="w-7 h-7"></i>
+    </button>
+
+    <div id="widget-window" class="hidden w-80 md:w-96 bg-white rounded-3xl shadow-2xl border border-slate-200/80 overflow-hidden flex flex-col h-[490px]">
+      <div class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center font-bold text-xs">
+            <i data-lucide="bot" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-xs">KTM Technologies Support</h4>
+            <p class="text-[10px] text-indigo-200 flex items-center gap-1 font-medium"><i class="fa-solid fa-globe"></i> Website Live Widget</p>
+          </div>
+        </div>
+        <button onclick="toggleWidget()" class="text-indigo-200 hover:text-white transition"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div id="widget-messages" class="flex-1 p-3.5 overflow-y-auto space-y-3 bg-slate-50 text-xs custom-scrollbar">
+        <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-2xl max-w-[85%] text-slate-800">
+          <p class="font-bold text-indigo-600 text-[10px] mb-1">KTM AI Assistant</p>
+          <p>Hello! Welcome to KTM Technologies. How can we help your business today?</p>
+        </div>
+      </div>
+
+      <div class="p-3 border-t border-slate-100 bg-white flex gap-2">
+        <input type="text" id="widget-input" onkeypress="handleWidgetKeyPress(event)" placeholder="Type a message..." class="flex-1 text-xs px-3 py-2.5 border border-slate-200 rounded-xl outline-none focus:border-indigo-600 font-medium">
+        <button onclick="sendWidgetCustomerMsg()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2.5 rounded-xl text-xs font-bold transition shadow-sm">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= EXPORT MODAL ================= -->
+  <div id="export-modal" class="fixed inset-0 bg-slate-950/60 z-50 flex items-center justify-center hidden backdrop-blur-sm">
+    <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5 border border-slate-100">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-sm text-slate-800">Export Conversation Log Records</h3>
+        <button onclick="closeExportModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-4 h-4"></i></button>
+      </div>
+      <p class="text-xs text-slate-500 font-medium">Download full log history including customer metadata, channel attribution, AI automatic replies, and human agent notes.</p>
+      
+      <div class="grid grid-cols-2 gap-3 pt-1">
+        <button onclick="downloadLogsMarkdown()" class="flex flex-col items-center justify-center p-4 border border-slate-200 rounded-2xl hover:border-indigo-600 hover:bg-indigo-50/50 transition group">
+          <i data-lucide="file-code" class="w-8 h-8 text-indigo-600 mb-2"></i>
+          <span class="text-xs font-bold text-slate-700">Export Markdown</span>
+          <span class="text-[10px] text-slate-400 font-medium">`chat_logs.md`</span>
+        </button>
+
+        <button onclick="downloadLogsJSON()" class="flex flex-col items-center justify-center p-4 border border-slate-200 rounded-2xl hover:border-emerald-600 hover:bg-emerald-50/50 transition group">
+          <i data-lucide="file-json" class="w-8 h-8 text-emerald-600 mb-2"></i>
+          <span class="text-xs font-bold text-slate-700">Export Data JSON</span>
+          <span class="text-[10px] text-slate-400 font-medium">`database.json`</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= APPLICATION SCRIPT ================= -->
+  <script>
+    lucide.createIcons();
+
+    // -------------------------------------------------------------
+    // STATE MANAGEMENT
+    // -------------------------------------------------------------
+    let activeAgent = "Rohan Shrestha";
+    let activeChannelFilter = 'all';
+    let currentSelectedChatId = 'chat-1';
+
+    let channelMsgCounts = {
+      Website: 42,
+      WhatsApp: 58,
+      Facebook: 31,
+      Instagram: 27
+    };
+
+    let knowledgeDocs = [
+      { id: 'doc-1', name: 'https://KTMtechnologies.com/faq', type: 'Web Scraper', date: 'Aug 10, 2026' },
+      { id: 'doc-2', name: 'Product_Catalog_2026.pdf', type: 'PDF Document', date: 'Aug 08, 2026' },
+      { id: 'doc-3', name: 'SLA_Service_Agreements.docx', type: 'DOCX Document', date: 'Aug 02, 2026' }
+    ];
+
+    // Rich Pre-Populated Customer Threads Across All Channels (Including Website)
+    let conversations = [
+      {
+        id: 'chat-1',
+        customerName: 'Sarah Connor',
+        email: 'sarah.c@cyberdyne.org',
+        phone: '+1 (555) 019-2831',
+        tier: 'VIP Enterprise',
+        firstSeen: 'Aug 01, 2026',
+        sentiment: 'Curious',
+        channel: 'Website',
+        mode: 'AI',
+        unread: false,
+        copilot: ['"Send Direct Reset Link"', '"Offer Video Onboarding Session"', '"Transfer to Security Support"'],
+        notes: "Requested enterprise SSO integration details.",
+        messages: [
+          { sender: 'Customer', text: 'Hello! Is it possible to integrate SAML 2.0 Single Sign-On with your platform?', timestamp: '10:40 AM' },
+          { sender: 'AI Assistant', text: 'Yes! KTM AI supports SAML 2.0 and OAuth 2.0 for enterprise tiers via Okta and Azure AD.', timestamp: '10:40 AM' },
+          { sender: 'Customer', text: 'Where can I find the Kathmandu office address for an in-person tech review?', timestamp: '10:42 AM' },
+          { sender: 'Human Agent: Rohan Shrestha', text: 'Hi Sarah! Our headquarters is located in Shankhamul, Kathmandu, Nepal. We would be happy to host you!', timestamp: '10:43 AM' }
+        ]
+      },
+      {
+        id: 'chat-2',
+        customerName: 'Kabin Gurung',
+        email: 'kabin.g@techhub.np',
+        phone: '+977 9841987654',
+        tier: 'Standard Business',
+        firstSeen: 'Aug 14, 2026',
+        sentiment: 'Interested',
+        channel: 'Website',
+        mode: 'AI',
+        unread: true,
+        copilot: ['"Share API Documentation"', '"Schedule Technical Demo Call"', '"Send Pricing Brochure"'],
+        notes: "Wants full REST API access for custom ERP.",
+        messages: [
+          { sender: 'Customer', text: 'Hi there, does the website widget support custom CSS styling for dark mode?', timestamp: '11:05 AM' },
+          { sender: 'AI Assistant', text: 'Yes, full custom CSS styling and dark mode themes can be toggled via your dashboard settings.', timestamp: '11:05 AM' },
+          { sender: 'Customer', text: 'Can we schedule a live integration demo with your engineers tomorrow?', timestamp: '11:08 AM' }
+        ]
+      },
+      {
+        id: 'chat-3',
+        customerName: 'Aarav Patel',
+        email: 'aarav.p@KTMtech.io',
+        phone: '+977 9841234567',
+        tier: 'VIP Enterprise',
+        firstSeen: 'Jul 24, 2026',
+        sentiment: 'Urgent',
+        channel: 'WhatsApp',
+        mode: 'Human',
+        unread: true,
+        copilot: ['"Schedule Live Demo Call"', '"Share Technical Architecture PDF"', '"Escalate to Tier 2 Support"'],
+        notes: "Requires custom UI build for mobile app.",
+        messages: [
+          { sender: 'Customer', text: 'Can I get a customized UI demo for our company executive team?', timestamp: '10:30 AM' },
+          { sender: 'Human Agent: Sita Gurung', text: 'Hello Aarav! Yes, I am preparing a tailored preview for your team right now.', timestamp: '10:32 AM' }
+        ]
+      },
+      {
+        id: 'chat-4',
+        customerName: 'Emily Watson',
+        email: 'emily.w@designstudio.uk',
+        phone: '+44 20 7946 0912',
+        tier: 'Pro Plan',
+        firstSeen: 'Aug 12, 2026',
+        sentiment: 'Positive',
+        channel: 'Instagram',
+        mode: 'AI',
+        unread: false,
+        copilot: ['"Send Mobile App Portfolio"', '"Confirm Flutter & iOS Support"'],
+        notes: "Reached out via Instagram DM.",
+        messages: [
+          { sender: 'Customer', text: 'Do you offer custom mobile application development for iOS and Android?', timestamp: '09:15 AM' },
+          { sender: 'AI Assistant', text: 'Yes, KTM Technologies specializes in cross-platform Flutter development and native iOS/Android builds.', timestamp: '09:15 AM' }
+        ]
+      },
+      {
+        id: 'chat-5',
+        customerName: 'Carlos Mendez',
+        email: 'carlos.m@fintech.co',
+        phone: '+34 91 123 4567',
+        tier: 'Standard Business',
+        firstSeen: 'Aug 05, 2026',
+        sentiment: 'Neutral',
+        channel: 'Facebook',
+        mode: 'AI',
+        unread: false,
+        copilot: ['"Explain Messenger Automation Rules"', '"Send SLA Guarantee Document"'],
+        notes: "Inquired about Facebook Messenger rate limits.",
+        messages: [
+          { sender: 'Customer', text: 'What is your response uptime SLA for Facebook Messenger webhooks?', timestamp: '08:40 AM' },
+          { sender: 'AI Assistant', text: 'Our infrastructure maintains a 99.9% uptime SLA with average response delays under 1 second.', timestamp: '08:41 AM' }
+        ]
+      },
+      {
+        id: 'chat-6',
+        customerName: 'Pooja Thapa',
+        email: 'pooja.t@himalayansolutions.np',
+        phone: '+977 9812345678',
+        tier: 'Pro Plan',
+        firstSeen: 'Aug 13, 2026',
+        sentiment: 'Positive',
+        channel: 'WhatsApp',
+        mode: 'Human',
+        unread: true,
+        copilot: ['"Confirm Payment Methods"', '"Send Direct Payment Gateway Link"'],
+        notes: "Pending payment confirmation for annual subscription.",
+        messages: [
+          { sender: 'Customer', text: 'Can we pay via eSewa or direct Bank Transfer for our invoice?', timestamp: '07:50 AM' },
+          { sender: 'Human Agent: Aarav Sharma', text: 'Namaste Pooja! Yes, we accept eSewa, Khalti, and direct bank transfers.', timestamp: '07:55 AM' }
+        ]
+      }
+    ];
+
+    const randomCustomerQuestions = [
+      "Can we integrate WhatsApp Business API directly into this workspace?",
+      "How does the AI engine handle multiline code snippets?",
+      "Is custom CSS skinning available for the embedded website live widget?",
+      "Can we export our daily message logs into JSON or CSV format?",
+      "What is the average response latency during peak hours?"
+    ];
+
+    const aiKnowledgeAnswers = {
+      "whatsapp": "Yes! We support official Meta WhatsApp Business Cloud APIs with human takeover capabilities.",
+      "code": "Our AI formats code blocks using Markdown with syntax highlighting for clarity.",
+      "widget": "Absolutely. You can customize colors, fonts, avatars, and positioning of the website live widget.",
+      "export": "You can export all conversation logs at any time in either Markdown or JSON format using the top header button.",
+      "default": "Thank you for reaching out! Our system has logged your query in our knowledge management engine."
+    };
+
+    function getChannelIconHtml(channel) {
+      switch(channel) {
+        case 'WhatsApp': return '<i class="fa-brands fa-whatsapp text-emerald-500"></i>';
+        case 'Instagram': return '<i class="fa-brands fa-instagram text-pink-500"></i>';
+        case 'Facebook': return '<i class="fa-brands fa-facebook text-indigo-500"></i>';
+        case 'Website': default: return '<i class="fa-solid fa-globe text-blue-500"></i>';
+      }
+    }
+
+    // -------------------------------------------------------------
+    // INITIALIZATION & AUTHENTICATION
+    // -------------------------------------------------------------
+    function init() {
+      renderAgentIdentity();
+      renderChannelStats();
+      renderChatList();
+      renderActiveChat();
+      renderDirectoryTable();
+      startRandomCustomerGenerator();
+    }
+
+    function loginAgent() {
+      const customName = document.getElementById('custom-agent-name').value.trim();
+      const selectedName = document.getElementById('agent-select').value;
+      
+      activeAgent = customName ? customName : selectedName;
+      document.getElementById('login-modal').classList.add('hidden');
+      renderAgentIdentity();
+    }
+
+    function logoutAgent() {
+      document.getElementById('login-modal').classList.remove('hidden');
+    }
+
+    function renderAgentIdentity() {
+      document.getElementById('current-agent-display').innerText = activeAgent;
+      document.getElementById('input-reply-identity').innerText = activeAgent;
+      
+      const initials = activeAgent.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+      document.getElementById('agent-avatar-badge').innerText = initials || 'AG';
+    }
+
+    function switchTab(tabId) {
+      ['inbox', 'knowledge', 'prompts', 'analytics'].forEach(t => {
+        document.getElementById(`tab-${t}`).classList.add('hidden');
+        document.getElementById(`nav-${t}`).classList.remove('bg-indigo-50', 'text-indigo-600');
+        document.getElementById(`nav-${t}`).classList.add('text-slate-600');
+      });
+
+      document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+      document.getElementById(`nav-${tabId}`).classList.add('bg-indigo-50', 'text-indigo-600');
+    }
+
+    function renderChannelStats() {
+      document.getElementById('stat-website').innerText = channelMsgCounts.Website;
+      document.getElementById('stat-whatsapp').innerText = channelMsgCounts.WhatsApp;
+      document.getElementById('stat-facebook').innerText = channelMsgCounts.Facebook;
+      document.getElementById('stat-instagram').innerText = channelMsgCounts.Instagram;
+
+      const total = channelMsgCounts.Website + channelMsgCounts.WhatsApp + channelMsgCounts.Facebook + channelMsgCounts.Instagram;
+      const totalElem = document.getElementById('analytic-total-msgs');
+      if (totalElem) totalElem.innerText = total;
+
+      // Update Channel Filter Badge Counts
+      document.getElementById('count-all').innerText = conversations.length;
+      document.getElementById('count-Website').innerText = conversations.filter(c => c.channel === 'Website').length;
+      document.getElementById('count-WhatsApp').innerText = conversations.filter(c => c.channel === 'WhatsApp').length;
+      document.getElementById('count-Facebook').innerText = conversations.filter(c => c.channel === 'Facebook').length;
+      document.getElementById('count-Instagram').innerText = conversations.filter(c => c.channel === 'Instagram').length;
+    }
+
+    // -------------------------------------------------------------
+    // INBOX SYSTEM
+    // -------------------------------------------------------------
+    function renderChatList() {
+      const listContainer = document.getElementById('chat-feed-list');
+      const searchQuery = document.getElementById('chat-search').value.toLowerCase();
+      listContainer.innerHTML = '';
+
+      let totalUnread = 0;
+
+      conversations.forEach(chat => {
+        if (chat.unread) totalUnread++;
+        
+        if (activeChannelFilter !== 'all' && chat.channel !== activeChannelFilter) return;
+        if (searchQuery && !chat.customerName.toLowerCase().includes(searchQuery)) return;
+
+        const isSelected = chat.id === currentSelectedChatId;
+        const lastMsg = chat.messages[chat.messages.length - 1];
+        const iconHtml = getChannelIconHtml(chat.channel);
+
+        const itemHtml = `
+          <div onclick="selectChat('${chat.id}')" class="p-3.5 cursor-pointer transition ${isSelected ? 'bg-indigo-50/90 border-l-4 border-indigo-600' : 'hover:bg-slate-50/80'}">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                ${chat.unread ? '<span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>' : ''}
+                ${chat.customerName}
+              </span>
+              <span class="text-[10px] font-medium text-slate-400">${lastMsg ? lastMsg.timestamp : ''}</span>
+            </div>
+            <p class="text-xs text-slate-500 truncate font-medium">${lastMsg ? lastMsg.text : 'No messages'}</p>
+            <div class="mt-2.5 flex items-center justify-between text-[10px]">
+              <span class="px-2 py-0.5 rounded-lg bg-white font-bold text-slate-600 border border-slate-200/80 flex items-center gap-1 shadow-2xs">
+                ${iconHtml} ${chat.channel}
+              </span>
+              <span class="px-2 py-0.5 rounded-lg ${chat.mode === 'AI' ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-800'} font-bold">
+                ${chat.mode} Mode
+              </span>
+            </div>
+          </div>
+        `;
+        listContainer.innerHTML += itemHtml;
+      });
+
+      document.getElementById('unread-count-badge').innerText = totalUnread;
+    }
+
+    function selectChat(chatId) {
+      currentSelectedChatId = chatId;
+      const chat = conversations.find(c => c.id === chatId);
+      if (chat) chat.unread = false;
+      renderChatList();
+      renderActiveChat();
+    }
+
+    function renderActiveChat() {
+      const chat = conversations.find(c => c.id === currentSelectedChatId);
+      const box = document.getElementById('admin-chat-box');
+      const nameElem = document.getElementById('active-chat-name');
+      const metaElem = document.getElementById('active-chat-meta');
+      const avatarElem = document.getElementById('active-chat-avatar');
+      const sentimentElem = document.getElementById('active-chat-sentiment');
+      const statusInd = document.getElementById('mode-status-indicator');
+
+      // CRM Details Panel
+      const emailElem = document.getElementById('customer-email');
+      const phoneElem = document.getElementById('customer-phone');
+      const tierElem = document.getElementById('customer-tier');
+      const seenElem = document.getElementById('customer-first-seen');
+      const copilotBox = document.getElementById('ai-copilot-box');
+      const notesElem = document.getElementById('agent-notes');
+
+      if (!chat) {
+        box.innerHTML = `<div class="text-center text-slate-400 my-10">Select a conversation thread to view details.</div>`;
+        return;
+      }
+
+      nameElem.innerText = chat.customerName;
+      metaElem.innerHTML = `${getChannelIconHtml(chat.channel)} ${chat.channel} • Active Mode: <strong class="text-slate-700 font-bold">${chat.mode}</strong>`;
+      avatarElem.innerText = chat.customerName.split(' ').map(n=>n[0]).join('');
+      sentimentElem.innerText = chat.sentiment || 'Positive';
+
+      // Update CRM Panel
+      emailElem.innerText = chat.email || 'customer@example.com';
+      phoneElem.innerText = chat.phone || '+1 (555) 000-0000';
+      tierElem.innerText = chat.tier || 'Standard';
+      seenElem.innerText = chat.firstSeen || 'Aug 01, 2026';
+      notesElem.value = chat.notes || '';
+
+      copilotBox.innerHTML = '';
+      (chat.copilot || ['"Provide Standard Resolution"', '"Schedule Follow-Up Call"']).forEach(sug => {
+        copilotBox.innerHTML += `
+          <button onclick="applyCopilot('${sug.replace(/"/g, '')}')" class="w-full text-left p-2.5 bg-slate-50 hover:bg-indigo-50/50 border border-slate-200/80 hover:border-indigo-300 rounded-xl text-xs font-bold text-slate-700 flex items-center gap-2 transition active:scale-[0.98]">
+            💡 ${sug}
+          </button>
+        `;
+      });
+
+      const btnAi = document.getElementById('mode-ai');
+      const btnHuman = document.getElementById('mode-human');
+
+      if (chat.mode === 'AI') {
+        btnAi.className = "px-3 py-1 text-xs font-bold rounded-xl bg-indigo-600 text-white shadow-sm transition";
+        btnHuman.className = "px-3 py-1 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition";
+        statusInd.innerText = "AI Automated Mode Active";
+        statusInd.className = "text-indigo-600 font-bold";
+      } else {
+        btnHuman.className = "px-3 py-1 text-xs font-bold rounded-xl bg-amber-500 text-white shadow-sm transition";
+        btnAi.className = "px-3 py-1 text-xs font-bold rounded-xl text-slate-600 hover:text-slate-900 transition";
+        statusInd.innerText = "Human Agent Override Active";
+        statusInd.className = "text-amber-600 font-bold";
+      }
+
+      box.innerHTML = '';
+      chat.messages.forEach(msg => {
+        let align = "justify-start";
+        let bg = "bg-white border-slate-200/80 text-slate-800";
+        let titleColor = "text-slate-400";
+        const isHuman = msg.sender.startsWith('Human Agent');
+
+        if (msg.sender === 'AI Assistant' || msg.sender === 'AI') {
+          bg = "bg-indigo-50 border-indigo-100 text-slate-800";
+          titleColor = "text-indigo-600 font-bold";
+        } else if (isHuman) {
+          align = "justify-end";
+          bg = "bg-gradient-to-r from-indigo-600 to-violet-600 text-white border-transparent";
+          titleColor = "text-indigo-200 font-bold";
+        }
+
+        const msgHtml = `
+          <div class="flex ${align}">
+            <div class="${bg} border p-3.5 rounded-2xl max-w-xs md:max-w-md shadow-sm space-y-1">
+              <p class="text-[10px] ${titleColor}">${msg.sender} • ${msg.timestamp}</p>
+              <p class="font-medium leading-relaxed">${msg.text}</p>
+            </div>
+          </div>
+        `;
+        box.innerHTML += msgHtml;
+      });
+
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function applyCopilot(suggestionText) {
+      const input = document.getElementById('admin-input');
+      input.value = suggestionText;
+      input.focus();
+    }
+
+    function saveInternalNote() {
+      const chat = conversations.find(c => c.id === currentSelectedChatId);
+      if (chat) {
+        chat.notes = document.getElementById('agent-notes').value;
+        alert("Internal agent note saved successfully!");
+      }
+    }
+
+    function setMode(mode) {
+      const chat = conversations.find(c => c.id === currentSelectedChatId);
+      if (chat) {
+        chat.mode = mode;
+        chat.messages.push({
+          sender: 'System',
+          text: `Thread context updated to ${mode} Mode.`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+        renderChatList();
+        renderActiveChat();
+      }
+    }
+
+    function sendHumanReply() {
+      const input = document.getElementById('admin-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const chat = conversations.find(c => c.id === currentSelectedChatId);
+      if (chat) {
+        chat.messages.push({
+          sender: `Human Agent: ${activeAgent}`,
+          text: text,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+
+        if (channelMsgCounts[chat.channel]) channelMsgCounts[chat.channel]++;
+        renderChannelStats();
+
+        input.value = '';
+        renderChatList();
+        renderActiveChat();
+      }
+    }
+
+    function handleAdminKeyPress(e) {
+      if (e.key === 'Enter') sendHumanReply();
+    }
+
+    function filterChannel(channel) {
+      activeChannelFilter = channel;
+      ['all', 'Website', 'WhatsApp', 'Facebook', 'Instagram'].forEach(c => {
+        const btn = document.getElementById(`btn-filter-${c}`);
+        if (btn) {
+          btn.className = (c === channel) 
+            ? "px-3 py-1.5 rounded-xl bg-indigo-600 text-white font-bold flex items-center gap-1.5 shadow-sm" 
+            : "px-3 py-1.5 rounded-xl bg-slate-100 text-slate-600 hover:bg-slate-200 font-bold flex items-center gap-1.5 transition";
+        }
+      });
+      renderChatList();
+    }
+
+    // -------------------------------------------------------------
+    // AUTOMATED LIVE TRAFFIC GENERATOR
+    // -------------------------------------------------------------
+    function startRandomCustomerGenerator() {
+      setInterval(() => {
+        triggerManualIncomingChat();
+      }, 10000);
+    }
+
+    function triggerManualIncomingChat() {
+      const randomNames = ['Prashant Giri', 'Kripa Rai', 'Deepak Joshi', 'Sujan Tamang', 'Nisha Adhikari', 'Bikash Shrestha'];
+      const channels = ['Website', 'WhatsApp', 'Facebook', 'Instagram'];
+      
+      const chosenName = randomNames[Math.floor(Math.random() * randomNames.length)];
+      const chosenChannel = channels[Math.floor(Math.random() * channels.length)];
+      const question = randomCustomerQuestions[Math.floor(Math.random() * randomCustomerQuestions.length)];
+
+      let chat = conversations.find(c => c.customerName === chosenName);
+      if (!chat) {
+        chat = {
+          id: `chat-${Date.now()}`,
+          customerName: chosenName,
+          email: `${chosenName.toLowerCase().replace(' ', '.')}@tech.np`,
+          phone: '+977 98' + Math.floor(10000000 + Math.random() * 90000000),
+          tier: 'Pro Plan',
+          firstSeen: 'Aug 15, 2026',
+          sentiment: 'Curious',
+          channel: chosenChannel,
+          mode: 'AI',
+          unread: true,
+          copilot: ['"Send Standard Product Overview"', '"Offer Technical Escalation"'],
+          notes: "Generated automatically via live channel traffic simulator.",
+          messages: []
+        };
+        conversations.unshift(chat);
+      }
+
+      chat.unread = true;
+      chat.messages.push({
+        sender: 'Customer',
+        text: question,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      channelMsgCounts[chosenChannel]++;
+      renderChannelStats();
+
+      // Automated AI Response Processing
+      if (chat.mode === 'AI') {
+        setTimeout(() => {
+          let replyText = aiKnowledgeAnswers.default;
+          const lowerQ = question.toLowerCase();
+          if (lowerQ.includes('whatsapp')) replyText = aiKnowledgeAnswers.whatsapp;
+          else if (lowerQ.includes('code')) replyText = aiKnowledgeAnswers.code;
+          else if (lowerQ.includes('widget') || lowerQ.includes('css')) replyText = aiKnowledgeAnswers.widget;
+          else if (lowerQ.includes('export') || lowerQ.includes('json')) replyText = aiKnowledgeAnswers.export;
+
+          chat.messages.push({
+            sender: 'AI Assistant',
+            text: replyText,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          });
+          
+          channelMsgCounts[chosenChannel]++;
+          renderChannelStats();
+
+          renderChatList();
+          if (currentSelectedChatId === chat.id) renderActiveChat();
+        }, 1200);
+      }
+
+      renderChatList();
+      if (currentSelectedChatId === chat.id) renderActiveChat();
+    }
+
+    // -------------------------------------------------------------
+    // KNOWLEDGE BASE MANAGEMENT
+    // -------------------------------------------------------------
+    function renderDirectoryTable() {
+      const table = document.getElementById('directory-table');
+      table.innerHTML = '';
+      knowledgeDocs.forEach(doc => {
+        table.innerHTML += `
+          <tr class="hover:bg-slate-50/50 transition">
+            <td class="p-3.5 font-bold text-slate-800">${doc.name}</td>
+            <td class="p-3.5"><span class="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-lg text-[10px] font-bold border border-indigo-100">${doc.type}</span></td>
+            <td class="p-3.5 text-slate-500">${doc.date}</td>
+            <td class="p-3.5 text-right">
+              <button onclick="deleteDoc('${doc.id}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    function startScrape() {
+      const url = document.getElementById('scrape-url').value;
+      if (!url) return;
+      const progressBox = document.getElementById('scrape-progress');
+      const bar = document.getElementById('scrape-bar');
+      const percentText = document.getElementById('scrape-percent');
+
+      progressBox.classList.remove('hidden');
+      let width = 0;
+      const timer = setInterval(() => {
+        width += 25;
+        bar.style.width = width + '%';
+        percentText.innerText = width + '%';
+        if (width >= 100) {
+          clearInterval(timer);
+          knowledgeDocs.push({
+            id: `doc-${Date.now()}`,
+            name: url,
+            type: 'Web Scraper',
+            date: 'Just now'
+          });
+          renderDirectoryTable();
+          setTimeout(() => progressBox.classList.add('hidden'), 1000);
+        }
+      }, 250);
+    }
+
+    function triggerFileUpload() { document.getElementById('file-input').click(); }
+
+    function handleFileSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        knowledgeDocs.push({
+          id: `doc-${Date.now()}`,
+          name: file.name,
+          type: 'Uploaded File',
+          date: 'Just now'
+        });
+        renderDirectoryTable();
+      }
+    }
+
+    function deleteDoc(id) {
+      knowledgeDocs = knowledgeDocs.filter(d => d.id !== id);
+      renderDirectoryTable();
+    }
+
+    // -------------------------------------------------------------
+    // FLOATING CHAT WIDGET LOGIC
+    // -------------------------------------------------------------
+    function toggleWidget() {
+      document.getElementById('widget-window').classList.toggle('hidden');
+      document.getElementById('widget-bubble').classList.toggle('hidden');
+    }
+
+    function sendWidgetCustomerMsg() {
+      const input = document.getElementById('widget-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const box = document.getElementById('widget-messages');
+      box.innerHTML += `
+        <div class="flex justify-end">
+          <div class="bg-gradient-to-r from-indigo-600 to-violet-600 text-white p-3 rounded-2xl max-w-[85%] font-medium">
+            <p>${text}</p>
+          </div>
+        </div>
+      `;
+      input.value = '';
+      box.scrollTop = box.scrollHeight;
+
+      setTimeout(() => {
+        box.innerHTML += `
+          <div class="bg-indigo-50 border border-indigo-100 p-3 rounded-2xl max-w-[85%] text-slate-800">
+            <p class="font-bold text-indigo-600 text-[10px] mb-1">KTM AI Assistant</p>
+            <p>Thanks for reaching out! Our team has received your message in the human agent desk.</p>
+          </div>
+        `;
+        box.scrollTop = box.scrollHeight;
+      }, 800);
+    }
+
+    function handleWidgetKeyPress(e) {
+      if (e.key === 'Enter') sendWidgetCustomerMsg();
+    }
+
+    // -------------------------------------------------------------
+    // EXPORT FUNCTIONS (.MD / .JSON)
+    // -------------------------------------------------------------
+    function openExportModal() { document.getElementById('export-modal').classList.remove('hidden'); }
+    function closeExportModal() { document.getElementById('export-modal').classList.add('hidden'); }
+
+    function downloadLogsMarkdown() {
+      let mdContent = `# KTM AI OMNICHANNEL CHATBOT LOGS\n`;
+      mdContent += `Export Timestamp: ${new Date().toLocaleString()}\n`;
+      mdContent += `Current Human Agent: ${activeAgent}\n\n`;
+
+      conversations.forEach(c => {
+        mdContent += `## Thread: ${c.customerName} [Channel: ${c.channel}]\n`;
+        mdContent += `Email: ${c.email || 'N/A'} | Phone: ${c.phone || 'N/A'} | Tier: ${c.tier || 'N/A'}\n`;
+        mdContent += `Mode: ${c.mode} | Notes: ${c.notes || 'None'}\n\n`;
+        c.messages.forEach(m => {
+          mdContent += `* **[${m.timestamp}] ${m.sender}:** ${m.text}\n`;
+        });
+        mdContent += `\n---\n\n`;
+      });
+
+      saveFile(mdContent, 'chat_logs.md', 'text/markdown');
+      closeExportModal();
+    }
+
+    function downloadLogsJSON() {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        loggedAgent: activeAgent,
+        metrics: channelMsgCounts,
+        knowledgeDirectory: knowledgeDocs,
+        conversations: conversations
+      };
+      saveFile(JSON.stringify(data, null, 2), 'chatbot_database.json', 'application/json');
+      closeExportModal();
+    }
+
+    function saveFile(content, fileName, contentType) {
+      const a = document.createElement('a');
+      const file = new Blob([content], { type: contentType });
+      a.href = URL.createObjectURL(file);
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }
+
+    // Run Initialization
+    init();
+  </script>
+</body>
+</html>
